@@ -1,22 +1,3 @@
-/********************************************************************************************
-This is a template for assignment on writing a custom Shell.
-
-Though use of any extra functions is not recommended, students may use new functions if they need to,
-but that should not make code unnecessorily complex to read.
-
-Students may change the return types and arguments of the functions given in this template,
-but do not change the names of these functions.
-
-Students need to be careful while forking a new process (no unnecessory process creations)
-or while inserting the single handler code (should be added at the correct places).
-
-Students should keep names of declared variable (and any new functions) self explanatory,
-and add proper comments for every logical step.
-
-Finally, keep your filename as myshell.c, do not change this name (not even myshell.cpp,
-as you not need to use any features for this assignment that are supported by C++ but not by C).
-*********************************************************************************************/
-
 // -*-*-*-*-**-*-*--*-*--*-*-*---*-*-*-*-*-*---*-**--*-*-*- Including Libraries *-*-*--*-*-*-*-*-*-*-*--*-*-**-*--*-*-**--*-*-**-*-
 #include <stdio.h>    // -> IO
 #include <string.h>   // -> String Utility Functions
@@ -36,21 +17,20 @@ void executeParallelCommands(char *command_Line_Tokens[TOTAL_TOKENS]);
 void executeSequentialCommands(char *command_Line_Tokens[TOTAL_TOKENS]);
 void executeCommandRedirection(char *command_Line_Tokens[TOTAL_TOKENS]);
 void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS]);
+
 void sigint_handler(int signum)
 {
-    printf("Received SIGINT(HeLlO) (Ctrl+C). Exiting...\n");
+    printf("Received SIGINT(Hello) (Ctrl+C). Exiting...\n");
     exit(signum);
 }
-
 void sigtstp_handler(int signum)
 {
-    printf("Received SIGTSTP.(HeLlO) Exiting...\n");
+    printf("Received SIGTSTP.(Hello) Exiting...\n");
     exit(signum);
 }
 
 // -*-*-*-*-**-*-*--*-*--*-*-*---*-*-*-*-*-*---*-**--*-*-*- Main Function *-*-*--*-*-*-*-*-*-*-*--*-*-**-*--*-*-**--*-*-**-*-
 
-// DONE
 int main()
 {
     // Ignoring Default Signals To Prevent Process Interruption
@@ -116,41 +96,9 @@ int main()
 
 // -*-*-*-*-**-*-*--*-*--*-*-*---*-*-*-*-*-*---*-**--*-*-  Command Parser *-*-*--*-*-*-*-*-*-*-*--*-*-**-*--*-*-**--*-*-**-*-
 
-// DONE
 /* parseInput function takes input as user command string and also pointers to where we need to parse and store data
 tokens as a 2d char array to store tokens seperated from input_Line by delimiter " " using strsep function
 ## or && or > token is searched, if found its respective flag is set for appropriate execution in main.*/
-
-/*
-void parseInput(char *input_Line, char *command_Line_Tokens[TOTAL_TOKENS], int *isRedirected, int *isSequential, int *isParallel)
-{
-    // This function will parse the input string into multiple commands or a single command with arguments depending on the delimiter (&&, ##, >, or spaces).
-    char *token;
-    int i = 0;
-
-    // Skip leading spaces
-    while (*input_Line == ' ')
-        input_Line++;
-
-    // Extracting tokens by spaces
-    while ((token = strsep(&input_Line, " ")) != NULL)
-    {
-        command_Line_Tokens[i] = token;
-        // Setting Flags based on their Tokens
-        if (strcmp(command_Line_Tokens[i], ">") == 0)
-            *isRedirected = 1;
-        if (strcmp(command_Line_Tokens[i], "&&") == 0)
-            *isParallel = 1;
-        if (strcmp(command_Line_Tokens[i], "##") == 0)
-            *isSequential = 1;
-        i++;
-    }
-    command_Line_Tokens[i - 1] = strsep(&command_Line_Tokens[i - 1], "\n"); // to remove NEWLINE character from command_Line_Tokens at the last character.
-    command_Line_Tokens[i] = NULL;                                          // Adding NULL to for no option commands and to iterate through multiple command tokens.
-    // ADDING NULL OTHERWISE EXECVP WONT WORK
-}
-*/
-
 void parseInput(char *input_Line, char *command_Line_Tokens[TOTAL_TOKENS], int *isRedirected, int *isSequential, int *isParallel, int *isPiped)
 {
     // This function will parse the input string into multiple commands or a single command with arguments depending on the delimiter (&&, ##, >, or spaces).
@@ -201,7 +149,6 @@ void parseInput(char *input_Line, char *command_Line_Tokens[TOTAL_TOKENS], int *
 
 // -*-*-*-*-**-*-*--*-*--*-*-*---*-*-*-*-*-*---*-**--*-*-*- Command Execution Functions *-*-*--*-*-*-*-*-*-*-*--*-*-**-*--*-*-**--*-*-**-*-
 
-// DONE
 void executeCommand(char *command_tokens[TOTAL_TOKENS])
 {
     if (strcmp(command_tokens[0], "cd") == 0)
@@ -234,7 +181,6 @@ void executeCommand(char *command_tokens[TOTAL_TOKENS])
             signal(SIGTSTP, sigtstp_handler);
 
             char *path = command_tokens[0];
-            // execvp(path, command_tokens);
             if (execvp(path, command_tokens) == -1)
             {
                 // Runs only if execvp fails
@@ -245,7 +191,6 @@ void executeCommand(char *command_tokens[TOTAL_TOKENS])
     }
 }
 
-// DONE
 /* This function is designed to execute multiple commands, each with or without options, in a parallel manner.
 The commands are separated by the && token. The parent process waits until all child processes have terminated,
 ensuring the parallel execution of commands provided by the user. */
@@ -314,7 +259,6 @@ void executeParallelCommands(char *command_tokens[TOTAL_TOKENS])
     }
 }
 
-// DONE
 /* This Function is to execute multiple commands with/without options in sequential way seperated by token ##.
 Parent waits untill childs termination gurantees serial execution of commands from user input. */
 void executeSequentialCommands(char *command_tokens[TOTAL_TOKENS])
@@ -373,7 +317,6 @@ void executeSequentialCommands(char *command_tokens[TOTAL_TOKENS])
     }
 }
 
-// DONE
 /* This Function is to execute only single commands with/without options with redirection
 New child is forked, File descriptors are changed to output to a file as per command token. */
 void executeCommandRedirection(char *command_tokens[TOTAL_TOKENS])
@@ -407,16 +350,7 @@ void executeCommandRedirection(char *command_tokens[TOTAL_TOKENS])
             exit(1);
         else if (fork_id > 0)
         {
-            /*
             // Parent Process
-            int child_status;
-            int child_id = waitpid(WAIT_ANY, &child_status, WUNTRACED);
-            if (WIFSTOPPED(child_status))
-            {
-                if (WSTOPSIG(child_status) == SIGTSTP)
-                    kill(child_id, SIGKILL); // Terminate process from stopped mode using SIGKILL
-            }
-            */
             wait(0);
         }
         else
@@ -439,190 +373,7 @@ void executeCommandRedirection(char *command_tokens[TOTAL_TOKENS])
     }
 }
 
-// -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*- PIPE(Bonus Question) *-*-*-*-*-*-*-*-*-*-*--*-*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-
-
-/*
-void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
-{
-    int fd[2];
-    if (pipe(fd) <= 0)
-    {
-        exit(1);
-    }
-
-    pid_t p1, p2;
-    p1 = fork();
-
-    if (p1 < 0)
-    {
-        exit(1);
-    }
-    else if (p1 == 0)
-    {
-        close(fd[0]);
-        dup2(fd[1], STDOUT_FILENO);
-        close(fd[1]);
-
-        execvp(command_Line_Tokens[0], command_Line_Tokens);
-
-        printf("Shell: Incorrect command\n");
-        exit(1);
-    }
-    else
-    {
-        p2 = fork();
-
-        if (p2 < 0)
-            exit(1);
-
-        else if (p2 == 0)
-        {
-            close(fd[1]);
-            dup2(fd[0], STDIN_FILENO);
-            close(fd[0]);
-
-            // PIPE FOR SECOND COMMAND
-            execvp(command_Line_Tokens[0], command_Line_Tokens);
-
-            printf("Shell: Incorrect command\n");
-            exit(1);
-        }
-        else
-        {
-            wait(0);
-            wait(0);
-        }
-    }
-
-    int i = 0;
-    while (command_tokens[i] != NULL)
-    {
-        char *executable_tokens[TOTAL_TOKENS];
-        int j = 0;
-
-        // Extract individual commands
-        while (command_tokens[i] != NULL && strcmp(command_tokens[i], "|") != 0)
-            executable_tokens[j++] = command_tokens[i++];
-
-        if (command_tokens[i] != NULL)
-            i++;
-
-        executable_tokens[j] = NULL;
-
-
-        int fork_id = fork();
-        if (fork_id < 0)
-            exit(1);
-        else if (fork_id > 0)
-        {
-            wait(0);
-        }
-        else if (fork_id == 0)
-        { // Child Process
-            // Restore signals to default handling
-            signal(SIGINT, SIG_DFL);
-            signal(SIGTSTP, SIG_DFL);
-
-            char *path = executable_tokens[0];
-            execvp(path, executable_tokens);
-
-            // Executed if execvp fails
-            printf("Shell: Incorrect command\n");
-            exit(1);
-        }
-    }
-}
-*/
-/*
-void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
-{
-    int i = 0;
-    int pipe_count = 0;
-
-    // Count the number of pipes
-    while (command_Line_Tokens[i] != NULL)
-    {
-        if (strcmp(command_Line_Tokens[i], "|") == 0)
-            pipe_count++;
-        i++;
-    }
-
-    // Creating an array of pipes
-    int pipes[pipe_count][2];
-    for (int j = 0; j < pipe_count; j++)
-    {
-        if (pipe(pipes[j]) < 0)
-        {
-            exit(1);
-        }
-    }
-
-    int start = 0;
-    for (int j = 0; j <= pipe_count; j++)
-    {
-        i = start;
-        char *executable_tokens[TOTAL_TOKENS];
-        int k = 0;
-
-        // Extract individual commands
-        while (command_Line_Tokens[i] != NULL && strcmp(command_Line_Tokens[i], "|") != 0)
-
-            executable_tokens[k++] = command_Line_Tokens[i++];
-
-        if (command_Line_Tokens[i] != NULL)
-            i++;
-        executable_tokens[k] = NULL;
-
-        pid_t pid = fork();
-        if (pid < 0)
-        {
-            perror("Fork failed");
-            exit(1);
-        }
-        else if (pid == 0)
-        { // Child Process
-            // If it's not the first command, set input from the previous pipe
-            if (j > 0)
-            {
-                close(pipes[j - 1][1]);              // Close write end of previous pipe
-                dup2(pipes[j - 1][0], STDIN_FILENO); // Redirect stdin to read end of previous pipe
-                close(pipes[j - 1][0]);
-            }
-
-            // If it's not the last command, set output to the current pipe
-            if (j < pipe_count)
-            {
-                close(pipes[j][0]);               // Close read end of current pipe
-                dup2(pipes[j][1], STDOUT_FILENO); // Redirect stdout to write end of current pipe
-                close(pipes[j][1]);
-            }
-
-            // Restore signals to default handling
-            signal(SIGINT, SIG_DFL);
-            signal(SIGTSTP, SIG_DFL);
-
-            char *path = executable_tokens[0];
-            execvp(path, executable_tokens);
-
-            printf("Shell: Incorrect command\n");
-            exit(1);
-        }
-        else
-        { // Parent Process
-            if (j > 0)
-            {
-                close(pipes[j - 1][0]); // Close read end of previous pipe
-                close(pipes[j - 1][1]); // Close write end of previous pipe
-            }
-
-            wait(NULL); // Wait for the child to finish
-
-            if (j == 0)
-                start = i; // Move the start index for the next iteration
-        }
-    }
-}
-*/
+// -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*- PIPE *-*-*-*-*-*-*-*-*-*-*--*-*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-
 
 void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
 {
@@ -778,8 +529,6 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
     }
 }
 
-// Restore signals to
-
 // -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*- END *-*-*-*-*-*-*-*-*-*-*--*-*-*-*--*-*-*-*-*-*-*-*-*-*-*-*-
 
 /*
@@ -791,5 +540,4 @@ ls | wc | wc
 
 cat main.c | grep -v "^$" | wc -l
 cat main.c | grep open | wc
-
 */
