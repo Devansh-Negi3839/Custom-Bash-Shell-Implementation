@@ -377,10 +377,11 @@ void executeCommandRedirection(char *command_tokens[TOTAL_TOKENS])
 
 void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
 {
-    int num_commands = 0;
-    int i = 0;
-    int input_fd = STDIN_FILENO;
+    int num_commands = 0;        // Counter for number of commands in the pipeline
+    int i = 0;                   // Index for iterating through command tokens
+    int input_fd = STDIN_FILENO; // File descriptor for input, initially standard input
 
+    // Loop through command tokens until NULL terminator
     while (command_Line_Tokens[i] != NULL)
     {
         if (strcmp(command_Line_Tokens[i], "|") == 0)
@@ -392,6 +393,7 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
                 return;
             }
 
+            // Create a pipe
             int pipe_fd[2];
             if (pipe(pipe_fd) == -1)
             {
@@ -399,24 +401,31 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
                 exit(1);
             }
 
+            // Fork a child process
             pid_t pid = fork();
             if (pid == 0)
             {
                 // Child process
+
+                // Redirect input from previous command
                 if (dup2(input_fd, STDIN_FILENO) == -1)
                 {
                     perror("dup2");
                     exit(1);
                 }
+
+                // Redirect output to the pipe
                 if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
                 {
                     perror("dup2");
                     exit(1);
                 }
 
+                // Close unused pipe ends
                 close(pipe_fd[0]);
                 close(pipe_fd[1]);
 
+                // Extract command arguments for current command
                 char *command_args[TOTAL_TOKENS];
                 int arg_count = 0;
                 int j = i - num_commands;
@@ -427,6 +436,7 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
                 }
                 command_args[arg_count] = NULL;
 
+                // Handle built-in command 'cd'
                 if (strcmp(command_args[0], "cd") == 0)
                 {
                     if (command_args[1] == NULL)
@@ -444,6 +454,7 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
                 }
                 else
                 {
+                    // Execute external command
                     execvp(command_args[0], command_args);
                     perror("execvp");
                     exit(1);
@@ -452,11 +463,11 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
             else if (pid > 0)
             {
                 // Parent process
-                close(pipe_fd[1]);
-                waitpid(pid, NULL, 0);
+                close(pipe_fd[1]);     // Close write end of the pipe
+                waitpid(pid, NULL, 0); // Wait for child process to complete
 
-                input_fd = pipe_fd[0];
-                num_commands = 0;
+                input_fd = pipe_fd[0]; // Set input for the next command to read end of the pipe
+                num_commands = 0;      // Reset command count for next iteration
             }
             else
             {
@@ -472,19 +483,22 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
         i++;
     }
 
-    // Execute the final command
+    // Execute the final command in the pipeline
     if (num_commands > 0)
     {
         pid_t pid = fork();
         if (pid == 0)
         {
             // Child process
+
+            // Redirect input from previous command
             if (dup2(input_fd, STDIN_FILENO) == -1)
             {
                 perror("dup2");
                 exit(1);
             }
 
+            // Extract command arguments for final command
             char *command_args[TOTAL_TOKENS];
             int arg_count = 0;
             int j = i - num_commands;
@@ -495,6 +509,7 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
             }
             command_args[arg_count] = NULL;
 
+            // Handle built-in command 'cd'
             if (strcmp(command_args[0], "cd") == 0)
             {
                 if (command_args[1] == NULL)
@@ -512,6 +527,7 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
             }
             else
             {
+                // Execute external command
                 execvp(command_args[0], command_args);
                 perror("execvp");
                 exit(1);
@@ -519,7 +535,8 @@ void executePipedCommands(char *command_Line_Tokens[TOTAL_TOKENS])
         }
         else if (pid > 0)
         {
-            waitpid(pid, NULL, 0);
+            // Parent process
+            waitpid(pid, NULL, 0); // Wait for child process to complete
         }
         else
         {
